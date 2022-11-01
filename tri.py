@@ -22,11 +22,7 @@ for i in range(excel_aliments.shape[0]):
             liste_categorie.append(mot.strip())
 
     if len(liste_categorie) != 0:
-        categories[excel_aliments.alim_code[i]] = categories
-
-
-print(categories)
-
+        categories[excel_aliments.alim_code[i]] = liste_categorie
 
 
 def sonder(n):
@@ -50,13 +46,12 @@ def sonder(n):
     liste_al8 = []
     liste_al9 = []
     liste_al10 = []
-
+    #copie du fichier
     for i in range(excel_sondage.shape[0]):
-        liste_adm.append(excel_sondage["Administré.e"][i])
         liste_adm.append(excel_sondage.get("Administré.e")[i])
         liste_lname.append(excel_sondage["Nom"][i])
         liste_fname.append(excel_sondage["Prénom"][i])
-        liste_bday.append(excel_sondage["Naissance"][i])
+        liste_bday.append(str(excel_sondage["Naissance"][i]))
         liste_add.append(excel_sondage["Adresse"][i])
         liste_zcode.append(excel_sondage["Code Postal"][i])
         liste_city.append(excel_sondage["Ville"][i])
@@ -74,6 +69,7 @@ def sonder(n):
 
     gen = Factory.create('fr_FR')
     administre = liste_adm[-1]
+    #ajout de nouvelle ligne
     for i in range(n):
         administre += 1
         liste_prod = excel_aliments.alim_code.tolist()
@@ -81,7 +77,7 @@ def sonder(n):
         liste_adm.append(administre)
         liste_lname.append(gen.last_name())
         liste_fname.append(gen.first_name())
-        liste_bday.append(gen.date_of_birth(None, 12).strftime("%Y/%m/%d"))
+        liste_bday.append(gen.date_of_birth(None, 12).strftime("%d/%m/%Y"))
         liste_add.append(adresse[0])
         liste_zcode.append(adresse[1].split()[0])
         liste_city.append(adresse[1].split()[1])
@@ -96,10 +92,11 @@ def sonder(n):
         liste_al8.append(liste_prod.pop(random.randint(0, len(liste_prod)-1)))
         liste_al9.append(liste_prod.pop(random.randint(0, len(liste_prod)-1)))
         liste_al10.append(liste_prod.pop(random.randint(0 ,len(liste_prod)-1)))
+    #mise en forme des résultats sous forme de série 
     s1=pd.Series(liste_adm, name="Administré.e")
     s2=pd.Series(liste_lname, name="Nom")
     s3=pd.Series(liste_fname, name="Prénom")
-    s4=pd.Series(liste_bday, name="Naissance")
+    s4=pd.Series(liste_bday, name="Naissance",dtype=str)
     s5=pd.Series(liste_add, name="Adresse")
     s6=pd.Series(liste_zcode, name="Code Postal")
     s7=pd.Series(liste_city, name="Ville")
@@ -118,4 +115,53 @@ def sonder(n):
     df.to_excel("Sondage.xlsx", sheet_name="Résultat Sondage", index=False)
 
     
-sonder(10541)
+#sonder(100)
+def cherche_categ(codeprod):
+    for aliment in range(excel_aliments.shape[0]):
+        if excel_aliments.alim_code[aliment]==codeprod:
+            return excel_aliments.alim_grp_nom_fr[aliment]
+    print("Erreur produit non trouvé")
+
+def regimecateg():
+    excel_sondage=pd.read_excel("Sondage.xlsx")
+    resultat_regime=[]
+    resultat_categ={}
+    for personne in range(excel_sondage.shape[0]):
+        regime_personne={}
+        regime_personne["bio"]=0
+        regime_personne["vegan"]=0
+        regime_personne["halal"]=0
+        regime_personne["casher"]=0
+        for aliment in range(1,11):
+            nom_colonne="Aliment"+str(aliment)
+            if excel_sondage[nom_colonne][personne] in categories.keys():
+                liste_categ = categories.get(excel_sondage[nom_colonne][personne])
+                for categorie in liste_categ:
+                    regime_personne[categorie]+=1
+            categ_produit=cherche_categ(excel_sondage[nom_colonne][personne])
+            if categ_produit not in resultat_categ.keys():
+                resultat_categ[categ_produit]=1
+            else:
+                resultat_categ[categ_produit]+=1
+        maxi=0
+        regime_privilegie="Aucun"
+        for regime in regime_personne.keys():
+            if regime_personne[regime]>maxi:
+                regime_privilegie=regime
+                maxi=regime_personne[regime]
+        resultat_regime.append(regime_privilegie)
+    return resultat_regime,resultat_categ
+
+regime_pers,prod_categ=regimecateg()
+print(regime_pers)
+print(prod_categ)
+
+
+def score_sante():
+    excel_sondage=pd.read_excel("Sondage.xlsx")
+    score_sante=[]
+    for personne in range(excel_sondage.shape[0]):
+        score=100
+        #...algo 
+        score_sante.append(score)
+    return score_sante
