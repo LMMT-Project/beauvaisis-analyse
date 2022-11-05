@@ -7,10 +7,13 @@ excel_aliments =  pd.read_excel("Aliments.xlsx")
 #dictionnaire -> clé : code produit, valeur : catégorie(s) 
 categories = {}
 cat_prod={}
+calories={}
+calo_prod={}
 #parcours du excel_aliments ligne par ligne
 for i in range(excel_aliments.shape[0]):
     liste_categorie = []
     cat_prod[excel_aliments.alim_code[i]] = excel_aliments.alim_grp_nom_fr[i]
+    calo_prod[excel_aliments.alim_code[i]] = str(excel_aliments["Energie, Règlement UE N° 1169/2011 (kcal/100 g)"][i]).replace(",", ".").strip()
     mots_alim_nom_fr = excel_aliments.alim_nom_fr[i].split()
     for mot in mots_alim_nom_fr:
         if mot.strip() in ["bio", "vegan"]:
@@ -23,6 +26,7 @@ for i in range(excel_aliments.shape[0]):
 
     if len(liste_categorie) != 0:
         categories[excel_aliments.alim_code[i]] = liste_categorie
+
 
 
 def sonder(n):
@@ -153,12 +157,36 @@ regime_pers, prod_categ = regimecateg()
 print(regime_pers)
 print(prod_categ)
 
+def moyenneCaloriesAliments():
+    nbAlimValable = 0
+    totalCalories = 0
+    for aliment in calo_prod.keys():
+        if calo_prod[aliment] != "-" and calo_prod[aliment] != "" and calo_prod[aliment] != "nan":
+            nbAlimValable += 1
+            totalCalories += float(calo_prod[aliment])
+            if(totalCalories != totalCalories):
+                print("cpt")
+    return float(totalCalories/nbAlimValable)
 
 def score_sante():
     excel_sondage = pd.read_excel("Sondage.xlsx")
     score_sante=[]
+    moyenneCalories = moyenneCaloriesAliments()
+
     for personne in range(excel_sondage.shape[0]):
-        score=100
-        #...algo 
-        score_sante.append(score)
+        score = 0
+        currentCalorie = 0
+        nbAlimValable = 0
+        for aliment in range(1,11):
+            nom_colonne = "Aliment"+str(aliment)
+            codeAlim = excel_sondage[nom_colonne][personne]
+            if calo_prod[codeAlim] != "-" and calo_prod[codeAlim] != "" and calo_prod[codeAlim] != "nan":
+                currentCalorie += float(calo_prod[codeAlim])
+                nbAlimValable += 1
+        if nbAlimValable != 0: 
+            moyenneRef = moyenneCalories * nbAlimValable
+            score = currentCalorie/moyenneRef * 50
+            score_sante.append(round(score,2))
     return score_sante
+
+print(score_sante())
