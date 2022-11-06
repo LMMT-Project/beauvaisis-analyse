@@ -195,3 +195,11 @@ def score_sante():
     return score_sante
 sante_pers = score_sante()
 print(sante_pers)
+marque=[]
+for x in range(10,110,10):
+    marque.append(x)
+plt.hist(sante_pers,bins=marque,range=(0,100))
+plt.ylabel("nombre de personne")
+plt.xlabel("score santé sur 100")
+plt.title("Résultats du sondage")
+plt.show()
