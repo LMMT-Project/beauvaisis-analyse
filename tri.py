@@ -119,7 +119,7 @@ def sonder(n):
     df.to_excel("Sondage.xlsx", sheet_name="Résultat Sondage", index=False)
 
     
-#sonder(10000)
+sonder(10000)
 def cherche_categ(codeprod):
     return cat_prod[codeprod]
 
