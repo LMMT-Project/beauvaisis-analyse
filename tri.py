@@ -1,7 +1,7 @@
 import pandas as pd
 from faker import Factory
 import random
-
+import matplotlib.pyplot as plt
 excel_aliments =  pd.read_excel("Aliments.xlsx")
 
 #dictionnaire -> clé : code produit, valeur : catégorie(s) 
@@ -185,8 +185,13 @@ def score_sante():
                 nbAlimValable += 1
         if nbAlimValable != 0: 
             moyenneRef = moyenneCalories * nbAlimValable
-            score = currentCalorie/moyenneRef * 50
+            
+            score = currentCalorie/moyenneRef * 100
+            if score >100:
+                score=100-(score-100)
+            if score < 0:
+                score=0
             score_sante.append(round(score,2))
     return score_sante
-
-print(score_sante())
+sante_pers = score_sante()
+print(sante_pers)
